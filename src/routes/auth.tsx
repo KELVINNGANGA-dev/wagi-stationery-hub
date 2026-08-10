@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +43,7 @@ function AuthPage() {
     if (user) void navigate({ to: "/", replace: true });
   }, [user, navigate]);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setBusy(true);
     if (isRegister) {
@@ -57,7 +56,7 @@ function AuthPage() {
         },
       });
       setBusy(false);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       if (!data.session) {
         setSent(true);
         return;
@@ -66,24 +65,17 @@ function AuthPage() {
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       setBusy(false);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       toast.success("Signed in");
     }
   };
 
-  const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) return toast.error("Google sign-in failed");
-  };
-
-  const resetPassword = async () => {
-    if (!email.trim()) return toast.error("Enter your email first");
+  const resetPassword = async (): Promise<void> => {
+    if (!email.trim()) { toast.error("Enter your email first"); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/reset-password`,
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Password reset link sent to your email");
   };
 
@@ -134,10 +126,6 @@ function AuthPage() {
                 {busy ? "Please wait…" : isRegister ? "Create account" : "Sign in"}
               </Button>
             </form>
-
-            <Button variant="outline" className="mt-3 w-full rounded-full" onClick={google}>
-              Continue with Google
-            </Button>
 
             <div className="mt-4 flex justify-between text-sm">
               <button type="button" className="text-primary hover:underline"
