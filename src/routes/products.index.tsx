@@ -26,7 +26,7 @@ type Search = {
   inStock?: boolean | undefined;
 };
 
-export const Route = createFileRoute("/products")({
+export const Route = createFileRoute("/products/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     q: typeof search["q"] === "string" ? search["q"] : undefined,
     category: typeof search["category"] === "string" ? search["category"] : undefined,
@@ -65,7 +65,7 @@ const SORTS = [
 
 function ProductsPage() {
   const search = Route.useSearch();
-  const navigate = useNavigate({ from: "/products" });
+  const navigate = useNavigate({ from: "/products/" });
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -140,7 +140,7 @@ function ProductsPage() {
   );
 
   const update = (patch: Partial<Search>) =>
-    void navigate({ search: (prev) => ({ ...prev, ...patch }) });
+    void navigate({ search: (prev: Search) => ({ ...prev, ...patch }) });
 
   const filters = (
     <div className="space-y-6">
