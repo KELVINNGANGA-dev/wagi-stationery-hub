@@ -55,8 +55,8 @@ function CheckoutPage() {
   const [couponCode, setCouponCode] = useState("");
   const [checkingCoupon, setCheckingCoupon] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"mpesa" | "cash_on_delivery">(
-    "cash_on_delivery",
+  const [paymentMethod, setPaymentMethod] = useState<"mpesa" | "cod">(
+    "cod",
   );
 
   const [form, setForm] = useState({
@@ -329,7 +329,7 @@ function CheckoutPage() {
               className="mt-4 space-y-3"
             >
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
-                <RadioGroupItem value="cash_on_delivery" id="cod" className="mt-1" />
+                <RadioGroupItem value="cod" id="cod" className="mt-1" />
                 <span>
                   <span className="flex items-center gap-2 font-medium">
                     <Banknote className="size-4 text-primary" /> Cash on delivery
