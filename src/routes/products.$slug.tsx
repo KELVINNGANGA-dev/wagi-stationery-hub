@@ -125,7 +125,7 @@ function ProductDetailPage() {
 
   const images = [
     ...(product.image_url ? [{ id: "main", image_url: product.image_url }] : []),
-    ...gallery.map((g) => ({ id: g.id, image_url: g.image_url })),
+    ...gallery.map((g) => ({ id: g.id, image_url: g.url })),
   ];
 
   const submitReview = async () => {
