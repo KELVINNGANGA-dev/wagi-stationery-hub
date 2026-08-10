@@ -1,0 +1,54 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+
+export const Route = createFileRoute("/admin")({
+  head: () => ({
+    meta: [
+      { title: "Admin Dashboard | WAGI - STATIONARIES" },
+      { name: "description", content: "Manage products, orders and inventory for WAGI." },
+      { property: "og:title", content: "Admin Dashboard | WAGI - STATIONARIES" },
+      { property: "og:description", content: "Internal store management area." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: AdminPage,
+});
+
+function AdminPage() {
+  const { isAdmin, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="container-page py-16">
+        <div className="h-40 rounded-2xl skeleton-shimmer" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="container-page py-20 text-center">
+        <h1 className="text-xl font-bold">Admins only</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This area is reserved for WAGI staff accounts.
+        </p>
+        <Button asChild className="mt-5 rounded-full">
+          <Link to="/">Back to store</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container-page py-12">
+      <h1 className="text-2xl font-bold tracking-tight">Admin dashboard</h1>
+      <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+        The full dashboard — stats, product and inventory management, order processing and sales
+        reports — is the next build phase. The storefront and database are already live.
+      </p>
+    </div>
+  );
+}
