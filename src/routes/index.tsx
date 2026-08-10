@@ -214,8 +214,8 @@ function SectionHeading({
   linkLabel,
 }: {
   title: string;
-  href?: string;
-  linkLabel?: string;
+  href?: string | undefined;
+  linkLabel?: string | undefined;
 }) {
   return (
     <div className="flex items-end justify-between gap-4">
@@ -243,7 +243,7 @@ function ProductRow({
   title: string;
   products: Product[];
   loading: boolean;
-  href?: string;
+  href?: string | undefined;
 }) {
   if (!loading && products.length === 0) return null;
   return (
