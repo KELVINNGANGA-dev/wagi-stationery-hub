@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: WAGI - STATIONARIES API
+  version: 0.1.0
+  description: API specification for core product and image upload functionality. No secrets included.
+servers:
+  - url: http://localhost:8000
+paths:
+  /api/products:
+    get:
+      summary: List products
+      responses:
+        '200':
+          description: OK
+  /api/products/{id}:
+    get:
+      summary: Get product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+  /api/admin/products/{id}/images:
+    post:
+      summary: Upload an image for a product (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Image uploaded
+        '400':
+          description: Validation error
+components: {}
