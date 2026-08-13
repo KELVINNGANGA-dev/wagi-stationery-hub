@@ -15,11 +15,19 @@ export default function Products() {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const res = await api.get('/api/products')
+      const res = await api.get('/api/admin/products')
       setProducts(res.data.data || res.data)
     } catch (e) {
       console.error(e)
     } finally { setLoading(false) }
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Delete this product?')) return
+    try {
+      await api.delete(`/api/admin/products/${id}`)
+      fetchProducts()
+    } catch (e:any) { alert('Delete failed: '+(e?.response?.data?.message || e.message)) }
   }
 
   return (
@@ -54,6 +62,7 @@ export default function Products() {
                     <td className="p-2">{p.stock_qty}</td>
                     <td className="p-2">
                       <Link to={`/products/${p.id}/edit`} className="text-blue-600 mr-2">Edit</Link>
+                      <button onClick={() => handleDelete(p.id)} className="text-red-600">Delete</button>
                     </td>
                   </tr>
                 ))}
