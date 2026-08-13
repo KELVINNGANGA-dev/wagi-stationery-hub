@@ -6,7 +6,15 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\AdminStatsController;
+use App\Http\Controllers\Admin\AdminCustomersController;
+use App\Http\Controllers\Admin\AdminCategoriesController;
+use App\Http\Controllers\Admin\AdminProductsController;
+use App\Http\Controllers\Admin\InventoryController;
+use App\Http\Controllers\Admin\AdminPaymentsController;
+use App\Http\Controllers\Admin\AdminReportsController;
+use App\Http\Controllers\Admin\AdminNotificationsController;
 
 // Public product routes
 Route::get('/products', [ProductController::class, 'index']);
@@ -38,7 +46,44 @@ Route::middleware(['auth:sanctum','throttle:30,1'])->group(function () {
 
 // Admin routes
 Route::prefix('admin')->middleware(['auth:sanctum','admin'])->group(function () {
-    // Protect admin UI routes (rendered by frontend) - these routes return JSON for dashboard
+    // Stats
+    Route::get('/stats', [AdminStatsController::class, 'index']);
+
+    // Customers
+    Route::get('/customers', [AdminCustomersController::class, 'index']);
+    Route::get('/customers/{id}', [AdminCustomersController::class, 'show']);
+    Route::put('/customers/{id}', [AdminCustomersController::class, 'update']);
+    Route::delete('/customers/{id}', [AdminCustomersController::class, 'destroy']);
+
+    // Categories
+    Route::get('/categories', [AdminCategoriesController::class, 'index']);
+    Route::post('/categories', [AdminCategoriesController::class, 'store']);
+    Route::put('/categories/{id}', [AdminCategoriesController::class, 'update']);
+    Route::delete('/categories/{id}', [AdminCategoriesController::class, 'destroy']);
+
+    // Products (admin)
+    Route::get('/products', [AdminProductsController::class, 'index']);
+    Route::delete('/products/{id}', [AdminProductsController::class, 'destroy']);
+    Route::post('/products/{id}/images/{imageId}/replace', [AdminProductsController::class, 'replaceImage']);
+    Route::delete('/products/{id}/images/{imageId}', [AdminProductsController::class, 'deleteImage']);
+
+    // Inventory
+    Route::post('/inventory/adjust', [InventoryController::class, 'adjust']);
+    Route::get('/inventory/low', [InventoryController::class, 'lowStock']);
+
+    // Payments
+    Route::get('/payments', [AdminPaymentsController::class, 'index']);
+    Route::post('/payments/{id}/status', [AdminPaymentsController::class, 'updateStatus']);
+
+    // Reports
+    Route::get('/reports/daily-sales', [AdminReportsController::class, 'dailySales']);
+    Route::get('/reports/monthly-sales', [AdminReportsController::class, 'monthlySales']);
+
+    // Notifications
+    Route::get('/notifications', [AdminNotificationsController::class, 'index']);
+    Route::post('/notifications/{id}/read', [AdminNotificationsController::class, 'markRead']);
+
+    // Orders
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::get('/orders/{id}', [AdminOrderController::class, 'show']);
     Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
