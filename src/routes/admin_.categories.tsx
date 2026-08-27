@@ -88,12 +88,18 @@ function slugify(value: string) {
     .replace(/^-|-$/g, "");
 }
 
+const PAGE_SIZE = 8;
+
 function AdminCategoriesPage() {
   const { isAdmin, loading } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<"all" | "active" | "inactive">("all");
+  const [sortBy, setSortBy] = useState<"order" | "name" | "newest" | "products">("order");
+  const [page, setPage] = useState(1);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
