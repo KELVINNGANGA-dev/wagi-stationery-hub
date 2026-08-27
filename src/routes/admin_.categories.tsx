@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowDown, ArrowUp, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
@@ -88,12 +88,18 @@ function slugify(value: string) {
     .replace(/^-|-$/g, "");
 }
 
+const PAGE_SIZE = 8;
+
 function AdminCategoriesPage() {
   const { isAdmin, loading } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<"all" | "active" | "inactive">("all");
+  const [sortBy, setSortBy] = useState<"order" | "name" | "newest" | "products">("order");
+  const [page, setPage] = useState(1);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
@@ -121,6 +127,39 @@ function AdminCategoriesPage() {
   useEffect(() => {
     if (isAdmin) void load();
   }, [isAdmin, load]);
+
+  const reorderEnabled = sortBy === "order" && status === "all" && search.trim() === "";
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = categories.filter((c) => {
+      const matchesQuery =
+        !q ||
+        c.name.toLowerCase().includes(q) ||
+        c.slug.toLowerCase().includes(q) ||
+        (c.description ?? "").toLowerCase().includes(q);
+      const matchesStatus =
+        status === "all" || (status === "active" ? c.is_active : !c.is_active);
+      return matchesQuery && matchesStatus;
+    });
+    list = [...list].sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "newest")
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (sortBy === "products") return (counts[b.id] ?? 0) - (counts[a.id] ?? 0);
+      return a.sort_order - b.sort_order || a.name.localeCompare(b.name);
+    });
+    return list;
+  }, [categories, counts, search, status, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, status, sortBy]);
+
 
   if (loading) {
     return (
@@ -308,7 +347,61 @@ function AdminCategoriesPage() {
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border bg-card shadow-card">
+      <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border bg-card p-3 shadow-card">
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, slug or description"
+            aria-label="Search categories"
+            className="pl-9"
+          />
+        </div>
+        <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
+          <SelectTrigger className="w-[150px]" aria-label="Filter by status">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="active">Active only</SelectItem>
+            <SelectItem value="inactive">Hidden only</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+          <SelectTrigger className="w-[170px]" aria-label="Sort categories">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="order">Sort order</SelectItem>
+            <SelectItem value="name">Name (A–Z)</SelectItem>
+            <SelectItem value="newest">Newest first</SelectItem>
+            <SelectItem value="products">Most products</SelectItem>
+          </SelectContent>
+        </Select>
+        {(search || status !== "all" || sortBy !== "order") && (
+          <Button
+            variant="ghost"
+            className="rounded-full"
+            onClick={() => {
+              setSearch("");
+              setStatus("all");
+              setSortBy("order");
+            }}
+          >
+            Reset
+          </Button>
+        )}
+      </div>
+
+      {!reorderEnabled && !fetching && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Reordering is available when search and filters are cleared and sorting is set to
+          “Sort order”.
+        </p>
+      )}
+
+      <div className="mt-4 overflow-hidden rounded-2xl border bg-card shadow-card">
         {fetching ? (
           <div className="space-y-2 p-4">
             {[0, 1, 2].map((i) => (
@@ -319,9 +412,15 @@ function AdminCategoriesPage() {
           <div className="p-10 text-center text-sm text-muted-foreground">
             No categories yet. Create your first one.
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="p-10 text-center text-sm text-muted-foreground">
+            No categories match your search or filters.
+          </div>
         ) : (
           <ul className="divide-y">
-            {categories.map((c, index) => (
+            {pageItems.map((c) => {
+              const index = categories.findIndex((x) => x.id === c.id);
+              return (
               <li key={c.id} className="flex flex-wrap items-center gap-3 p-4">
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-lg">
                   {c.icon ?? "✏️"}
