@@ -128,6 +128,39 @@ function AdminCategoriesPage() {
     if (isAdmin) void load();
   }, [isAdmin, load]);
 
+  const reorderEnabled = sortBy === "order" && status === "all" && search.trim() === "";
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = categories.filter((c) => {
+      const matchesQuery =
+        !q ||
+        c.name.toLowerCase().includes(q) ||
+        c.slug.toLowerCase().includes(q) ||
+        (c.description ?? "").toLowerCase().includes(q);
+      const matchesStatus =
+        status === "all" || (status === "active" ? c.is_active : !c.is_active);
+      return matchesQuery && matchesStatus;
+    });
+    list = [...list].sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "newest")
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (sortBy === "products") return (counts[b.id] ?? 0) - (counts[a.id] ?? 0);
+      return a.sort_order - b.sort_order || a.name.localeCompare(b.name);
+    });
+    return list;
+  }, [categories, counts, search, status, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, status, sortBy]);
+
+
   if (loading) {
     return (
       <div className="container-page py-16">
