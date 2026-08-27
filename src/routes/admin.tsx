@@ -46,9 +46,21 @@ function AdminPage() {
     <div className="container-page py-12">
       <h1 className="text-2xl font-bold tracking-tight">Admin dashboard</h1>
       <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-        The full dashboard — stats, product and inventory management, order processing and sales
-        reports — is the next build phase. The storefront and database are already live.
+        Manage the storefront. More tools — products, inventory, orders and reports — are coming
+        next.
       </p>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Link
+          to="/admin/categories"
+          className="group rounded-2xl border bg-card p-5 shadow-card transition-all hover:-translate-y-1 hover:border-primary hover:shadow-elevated"
+        >
+          <span className="block font-semibold group-hover:text-primary">Categories</span>
+          <span className="mt-1 block text-sm text-muted-foreground">
+            Create, edit, reorder, hide or delete storefront categories.
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }
