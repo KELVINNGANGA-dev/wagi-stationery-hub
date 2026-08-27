@@ -347,7 +347,61 @@ function AdminCategoriesPage() {
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border bg-card shadow-card">
+      <div className="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border bg-card p-3 shadow-card">
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search name, slug or description"
+            aria-label="Search categories"
+            className="pl-9"
+          />
+        </div>
+        <Select value={status} onValueChange={(v) => setStatus(v as typeof status)}>
+          <SelectTrigger className="w-[150px]" aria-label="Filter by status">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="active">Active only</SelectItem>
+            <SelectItem value="inactive">Hidden only</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+          <SelectTrigger className="w-[170px]" aria-label="Sort categories">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="order">Sort order</SelectItem>
+            <SelectItem value="name">Name (A–Z)</SelectItem>
+            <SelectItem value="newest">Newest first</SelectItem>
+            <SelectItem value="products">Most products</SelectItem>
+          </SelectContent>
+        </Select>
+        {(search || status !== "all" || sortBy !== "order") && (
+          <Button
+            variant="ghost"
+            className="rounded-full"
+            onClick={() => {
+              setSearch("");
+              setStatus("all");
+              setSortBy("order");
+            }}
+          >
+            Reset
+          </Button>
+        )}
+      </div>
+
+      {!reorderEnabled && !fetching && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Reordering is available when search and filters are cleared and sorting is set to
+          “Sort order”.
+        </p>
+      )}
+
+      <div className="mt-4 overflow-hidden rounded-2xl border bg-card shadow-card">
         {fetching ? (
           <div className="space-y-2 p-4">
             {[0, 1, 2].map((i) => (
@@ -358,9 +412,15 @@ function AdminCategoriesPage() {
           <div className="p-10 text-center text-sm text-muted-foreground">
             No categories yet. Create your first one.
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="p-10 text-center text-sm text-muted-foreground">
+            No categories match your search or filters.
+          </div>
         ) : (
           <ul className="divide-y">
-            {categories.map((c, index) => (
+            {pageItems.map((c) => {
+              const index = categories.findIndex((x) => x.id === c.id);
+              return (
               <li key={c.id} className="flex flex-wrap items-center gap-3 p-4">
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-lg">
                   {c.icon ?? "✏️"}
